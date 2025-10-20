@@ -1,11 +1,20 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'database/database_helper.dart';
+import 'providers/theme_provider.dart';
+import 'constants/app_theme.dart';
 import 'screens/task_list_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await DatabaseHelper.instance.initDb();
-  runApp(const TaskApp());
+
+  final themeProvider = ThemeProvider();
+  await themeProvider.init();
+
+  runApp(
+    ChangeNotifierProvider.value(value: themeProvider, child: const TaskApp()),
+  );
 }
 
 class TaskApp extends StatelessWidget {
@@ -13,13 +22,18 @@ class TaskApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Task Manager',
-      theme: ThemeData(
-        useMaterial3: true,
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
-      ),
-      home: const TaskListScreen(),
+    return Consumer<ThemeProvider>(
+      builder: (context, themeProvider, _) {
+        return MaterialApp(
+          title: 'Task Manager',
+          theme: AppTheme.lightTheme,
+          darkTheme: AppTheme.darkTheme,
+          themeMode: themeProvider.isDarkMode
+              ? ThemeMode.dark
+              : ThemeMode.light,
+          home: const TaskListScreen(),
+        );
+      },
     );
   }
 }

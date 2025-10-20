@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../constants/priority_enum.dart';
 import '../models/task.dart';
 import '../database/database_helper.dart';
+import '../providers/theme_provider.dart';
 
 class TaskListScreen extends StatefulWidget {
   const TaskListScreen({Key? key}) : super(key: key);
@@ -117,7 +119,33 @@ class _TaskListScreenState extends State<TaskListScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Task Manager'), centerTitle: true),
+      appBar: AppBar(
+        title: const Text('Task Manager'),
+        actions: [
+          Consumer<ThemeProvider>(
+            builder: (context, themeProvider, _) {
+              return IconButton(
+                icon: Icon(
+                  themeProvider.isDarkMode ? Icons.light_mode : Icons.dark_mode,
+                ),
+                onPressed: () => themeProvider.toggleTheme(),
+                tooltip: 'Toggle theme',
+              );
+            },
+          ),
+        ],
+      ),
+      floatingActionButton: Consumer<ThemeProvider>(
+        builder: (context, themeProvider, _) {
+          return FloatingActionButton(
+            onPressed: () => themeProvider.toggleTheme(),
+            child: Text(
+              themeProvider.isDarkMode ? 'Light' : 'Dark',
+              style: const TextStyle(fontSize: 12),
+            ),
+          );
+        },
+      ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : Column(
@@ -148,12 +176,6 @@ class _TaskListScreenState extends State<TaskListScreen> {
                           const SizedBox(width: 12),
                           ElevatedButton(
                             onPressed: _addTask,
-                            style: ElevatedButton.styleFrom(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 24,
-                                vertical: 16,
-                              ),
-                            ),
                             child: const Text('Add'),
                           ),
                         ],
@@ -231,7 +253,7 @@ class _TaskListScreenState extends State<TaskListScreen> {
                                         : TextDecoration.none,
                                     color: task.isCompleted
                                         ? Colors.grey
-                                        : Colors.black,
+                                        : null,
                                   ),
                                 ),
                                 subtitle: Padding(
